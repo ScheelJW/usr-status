@@ -1,0 +1,50 @@
+name: Claude security review
+
+# Anthropic's Claude Code security review reads each pull request's changes
+# and leaves a comment on any line that could open a security hole.
+# It needs the repository secret CLAUDE_API_KEY. Until that secret exists the
+# job still runs and passes, and says the review was skipped.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: security-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Only PRs from branches in this repository. Fork and bot PRs are untrusted
+    # and the action is not hardened against prompt injection.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_KEY: ${{ secrets.CLAUDE_API_KEY != '' }}
+    steps:
+      - name: Skip when no API key is set
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::Claude security review skipped. Add the CLAUDE_API_KEY repository secret to turn it on."
+
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
+      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main, 2026-11-15
+        if: env.HAS_KEY == 'true'
+        with:
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          claude-model: claude-opus-5-5
+          comment-pr: true
+          claudecode-timeout: 25
+          exclude-directories: incidents
