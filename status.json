@@ -1,11 +1,43 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-15T15:57:49.774Z",
   "notice": null,
+  "components": [
+    {
+      "id": "rides",
+      "name": "Ride requests and the app",
+      "monitored": true,
+      "status": "operational"
+    },
+    {
+      "id": "messaging",
+      "name": "Ride messages and notifications",
+      "monitored": false,
+      "status": "operational"
+    },
+    {
+      "id": "website",
+      "name": "Website",
+      "monitored": true,
+      "status": "operational"
+    },
+    {
+      "id": "console",
+      "name": "Team console and team pages",
+      "monitored": true,
+      "status": "operational"
+    },
+    {
+      "id": "support",
+      "name": "Help and support",
+      "monitored": true,
+      "status": "operational"
+    }
+  ],
   "checks": {
-    "checkedAt": "2026-11-15T15:57:49.774Z",
+    "checkedAt": "2026-11-15T16:19:51.278Z",
     "api": "up",
     "website": "up",
     "downSince": null
-  }
+  },
+  "updatedAt": "2026-11-15T16:19:51.278Z"
 }
