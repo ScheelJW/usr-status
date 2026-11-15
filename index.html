@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Uniformed Safe Rides status</title>
-<meta name="description" content="Is Uniformed Safe Rides working right now? Live status and every team's ride line.">
+<meta name="description" content="Is Uniformed Safe Rides working right now?">
 <style>
   :root { --bg:#f5f7fb; --card:#fff; --text:#0f1b2d; --muted:#4a5a70; --line:#d9e0ea; --ok:#1f7a4d; --okbg:#e6f4ec; --bad:#a3361f; --badbg:#fbeae5; --info:#1d4f91; --infobg:#e7eefa; --brand:#0b2545; }
   @media (prefers-color-scheme: dark) { :root { --bg:#0b1422; --card:#121e30; --text:#eef3fa; --muted:#a9b6c8; --line:#26354b; --ok:#6fd39f; --okbg:#12301f; --bad:#ff9b85; --badbg:#3a1a14; --info:#8db7f2; --infobg:#142a47; --brand:#eef3fa; } }
@@ -24,11 +24,6 @@
   p { margin:0 0 6px; } .muted { color:var(--muted); font-size:15px; }
   .rows { display:grid; gap:2px; margin-top:8px; }
   .row { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--line); }
-  input { width:100%; font:inherit; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--text); margin:8px 0 4px; }
-  .team { padding:12px 0; border-top:1px solid var(--line); }
-  .team:first-of-type { border-top:0; }
-  .call { display:inline-block; margin:6px 8px 0 0; padding:10px 14px; min-height:44px; border-radius:12px; background:var(--brand); color:var(--bg); text-decoration:none; font-weight:600; }
-  .call.secondary { background:transparent; color:var(--text); border:1px solid var(--line); font-weight:500; }
   a { color:var(--info); }
 </style>
 </head>
@@ -38,14 +33,6 @@
 
   <section id="state" class="card state" aria-live="polite"><span class="dot"></span><div><h2>Checking…</h2><p class="muted">Loading the latest status.</p></div></section>
   <section id="notice" class="card notice" hidden><h3></h3><p></p><p class="muted"></p></section>
-
-  <section class="card">
-    <h3>Need a ride right now?</h3>
-    <p>If the app isn't working, call your base's ride line. Find your team below.</p>
-    <label for="q" class="muted">Search by base, team or country</label>
-    <input id="q" type="search" autocomplete="off" placeholder="Ramstein, Minot, Italy…">
-    <div id="teams"><p class="muted">Loading ride lines…</p></div>
-  </section>
 
   <section class="card">
     <h3>What we check</h3>
@@ -61,8 +48,6 @@
 <script>
 const $ = id => document.getElementById(id);
 const ago = iso => { const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hr ago` : new Date(iso).toLocaleString(); };
-const tel = raw => 'tel:' + String(raw).replace(/[^\d+]/g, '');
-function el(tag, attrs = {}, text) { const e = document.createElement(tag); Object.assign(e, attrs); if (text != null) e.textContent = text; return e; }
 
 async function load(path) { const r = await fetch(`${path}?t=${Date.now()}`, {cache: 'no-store'}); if (!r.ok) throw new Error(r.status); return r.json(); }
 
@@ -72,7 +57,7 @@ async function showStatus() {
   const down = fresh && (c.api === 'down' || c.website === 'down');
   box.className = 'card state ' + (!fresh ? '' : down ? 'bad' : 'ok');
   box.querySelector('h2').textContent = !fresh ? 'Status not confirmed' : c.api === 'down' ? 'Ride requests are having trouble' : c.website === 'down' ? 'The website is having trouble' : 'Everything is working';
-  box.querySelector('p').textContent = !fresh ? 'Our automatic check has not reported recently. If the app works for you, rides are running.' : down ? `Since ${new Date(c.downSince || c.checkedAt).toLocaleString()}. If you need a ride, call your base's ride line below.` : 'Ride requests, the app and the website are all answering.';
+  box.querySelector('p').textContent = !fresh ? 'Our automatic check has not reported recently. If the app works for you, rides are running.' : down ? `Since ${new Date(c.downSince || c.checkedAt).toLocaleString()}. If you need a ride, call your base's ride line.` : 'Ride requests, the app and the website are all answering.';
   $('api').textContent = c ? (c.api === 'up' ? 'Working' : 'Having trouble') : 'Unknown';
   $('web').textContent = c ? (c.website === 'up' ? 'Working' : 'Having trouble') : 'Unknown';
   $('checked').textContent = c ? `Last checked ${ago(c.checkedAt)}. Checks run about every 5 minutes.` : '';
@@ -81,31 +66,7 @@ async function showStatus() {
   if (n) { nb.querySelector('h3').textContent = n.title; nb.querySelectorAll('p')[0].textContent = n.message || ''; nb.querySelectorAll('p')[1].textContent = `Posted ${ago(n.updatedAt)}`; }
 }
 
-let teams = [];
-function renderTeams() {
-  const q = $('q').value.trim().toLowerCase(), box = $('teams');
-  box.replaceChildren();
-  const list = teams.filter(t => !q || [t.name, t.base, t.country].join(' ').toLowerCase().includes(q));
-  if (!teams.length) { box.append(el('p', {className: 'muted'}, 'No ride lines are listed yet. Open the app or ask your local team for their number.')); return; }
-  if (!list.length) { box.append(el('p', {className: 'muted'}, 'No team matches that search.')); return; }
-  for (const t of list.slice(0, 50)) {
-    const row = el('div', {className: 'team'});
-    row.append(el('strong', {}, t.name));
-    if (t.base && t.base !== t.name) row.append(el('div', {className: 'muted'}, [t.base, t.country].filter(Boolean).join(', ')));
-    for (const [i, c] of t.contacts.entries()) {
-      const number = c.phone || c.dsn;
-      const label = `${c.label || (c.kind === 'ride_line' ? 'Ride line' : 'Call')}: ${c.phone || 'DSN ' + c.dsn}`;
-      row.append(el('a', {className: 'call' + (i ? ' secondary' : ''), href: tel(number)}, label));
-    }
-    box.append(row);
-  }
-}
-async function showTeams() {
-  try { teams = (await load('ride-lines.json')).teams || []; } catch { teams = []; }
-  renderTeams();
-}
-$('q').addEventListener('input', renderTeams);
-showStatus(); showTeams();
+showStatus();
 setInterval(showStatus, 60000);
 </script>
 </body>

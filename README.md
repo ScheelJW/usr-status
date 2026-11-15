@@ -17,8 +17,6 @@ To clear it, delete your lines and commit again.
 
 - `.github/workflows/check.yml` runs every 5 minutes. It checks the API and website from outside
   Cloudflare and writes `status.json` when something changes.
-- It also copies every team's **public** ride line and backup numbers into `ride-lines.json` while
-  the API is up, so people can find a number on this page during an outage.
 - Nothing private is stored here. The source for these files is `ops/status-page/` in the main repository.
 
 ## Setup (once)

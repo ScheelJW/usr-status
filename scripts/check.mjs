@@ -1,5 +1,5 @@
 // Runs in the public usr-status repository on GitHub Actions, never on Cloudflare.
-// Checks USR from outside, reads NOTICE.md, and rewrites status.json / ride-lines.json only when
+// Checks USR from outside, reads NOTICE.md, and rewrites status.json only when
 // something changed, so the page and the app can tell people what is happening during an outage.
 import {readFileSync, writeFileSync, appendFileSync, existsSync} from 'node:fs';
 
@@ -55,20 +55,6 @@ let changed = false;
 if (stateChanged || noticeChanged || isDown || stale) {
   writeFileSync('status.json', JSON.stringify({version: 1, updatedAt: now, notice, checks: {checkedAt: now, api: apiState, website: websiteState, downSince}}, null, 2) + '\n');
   changed = true;
-}
-
-// Copy the public ride lines while the API is up. Never replace a good list with a failed one.
-if (api) {
-  try {
-    const res = await fetch(`${API}/programs/public-ride-lines`, {signal: AbortSignal.timeout(20_000)});
-    const body = res.ok ? await res.json() : null;
-    const teams = body?.success && Array.isArray(body.data?.teams) ? body.data.teams : null;
-    const saved = readJson('ride-lines.json', {teams: []});
-    if (teams && JSON.stringify(teams) !== JSON.stringify(saved.teams)) {
-      writeFileSync('ride-lines.json', JSON.stringify({updatedAt: now, teams}, null, 2) + '\n');
-      changed = true;
-    }
-  } catch (error) { console.log(`ride lines not refreshed: ${error.message}`); }
 }
 
 console.log(`api ${apiState}, website ${websiteState}, notice ${notice ? `"${notice.title}"` : 'none'}, changed ${changed}`);
