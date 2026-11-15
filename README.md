@@ -1,6 +1,6 @@
 # Uniformed Safe Rides status
 
-The public status page for Uniformed Safe Rides: https://scheeljw.github.io/usr-status/
+The public status page for Uniformed Safe Rides: https://status.uniformedsaferides.org/
 
 It lives on GitHub, not Cloudflare, so it keeps working when the rest of USR is down. The USR app
 and website read `status.json` from here to show an outage banner or a notice.
@@ -23,4 +23,4 @@ To clear it, delete your lines and commit again.
 
 ## Setup (once)
 
-Settings, Pages, Source: Deploy from a branch, Branch: `main`, folder `/ (root)`.
+Settings, Pages, Source: Deploy from a branch, Branch: `main`, folder `/ (root)`. Custom domain `status.uniformedsaferides.org` (the `CNAME` file), DNS-only CNAME to `scheeljw.github.io` in Cloudflare (never proxied), Enforce HTTPS on. Apps fall back to `raw.githubusercontent.com/ScheelJW/usr-status/main/status.json` if Cloudflare DNS is down.
