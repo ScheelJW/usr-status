@@ -4,70 +4,179 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Uniformed Safe Rides status</title>
-<meta name="description" content="Is Uniformed Safe Rides working right now?">
+<meta name="description" content="Live status of Uniformed Safe Rides, with updates while we fix problems.">
+<link rel="icon" href="logo.png">
 <style>
-  :root { --bg:#f5f7fb; --card:#fff; --text:#0f1b2d; --muted:#4a5a70; --line:#d9e0ea; --ok:#1f7a4d; --okbg:#e6f4ec; --bad:#a3361f; --badbg:#fbeae5; --info:#1d4f91; --infobg:#e7eefa; --brand:#0b2545; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0b1422; --card:#121e30; --text:#eef3fa; --muted:#a9b6c8; --line:#26354b; --ok:#6fd39f; --okbg:#12301f; --bad:#ff9b85; --badbg:#3a1a14; --info:#8db7f2; --infobg:#142a47; --brand:#eef3fa; } }
+  :root { --bg:#f5f7fb; --card:#fff; --text:#0f1b2d; --muted:#4a5a70; --line:#d9e0ea; --ok:#1f8a55; --okbg:#e6f4ec; --warn:#b26a00; --warnbg:#fdf2dd; --bad:#c0392b; --badbg:#fbeae5; --info:#1d4f91; --infobg:#e7eefa; --none:#cfd6e0; --brand:#0b2545; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1422; --card:#121e30; --text:#eef3fa; --muted:#a9b6c8; --line:#26354b; --ok:#4cc38a; --okbg:#12301f; --warn:#f0b54a; --warnbg:#35280f; --bad:#ff8a75; --badbg:#3a1a14; --info:#8db7f2; --infobg:#142a47; --none:#2b3a50; --brand:#eef3fa; } }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-  main { max-width:720px; margin:0 auto; padding:24px 16px 48px; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:800px; margin:0 auto; padding:24px 16px 56px; }
   header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
   header img { width:40px; height:40px; border-radius:10px; }
   header h1 { font-size:20px; margin:0; color:var(--brand); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin-bottom:16px; }
-  .state { display:flex; gap:14px; align-items:flex-start; }
-  .dot { flex:none; width:14px; height:14px; border-radius:50%; margin-top:7px; background:var(--muted); }
-  .ok { background:var(--okbg); border-color:transparent; } .ok .dot { background:var(--ok); }
-  .bad { background:var(--badbg); border-color:transparent; } .bad .dot { background:var(--bad); }
-  .notice { background:var(--infobg); border-color:transparent; }
-  h2 { font-size:20px; margin:0 0 4px; } h3 { font-size:17px; margin:0 0 8px; }
-  p { margin:0 0 6px; } .muted { color:var(--muted); font-size:15px; }
-  .rows { display:grid; gap:2px; margin-top:8px; }
-  .row { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--line); }
+  h2 { font-size:18px; margin:28px 0 10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; }
+  .overall { display:flex; gap:12px; align-items:center; font-weight:650; font-size:18px; border:0; }
+  .overall.ok { background:var(--okbg); } .overall.warn { background:var(--warnbg); } .overall.bad { background:var(--badbg); } .overall.info { background:var(--infobg); }
+  .dot { flex:none; width:12px; height:12px; border-radius:50%; background:var(--none); }
+  .ok .dot, .dot.ok { background:var(--ok); } .warn .dot, .dot.warn { background:var(--warn); } .bad .dot, .dot.bad { background:var(--bad); } .info .dot, .dot.info { background:var(--info); }
+  .muted { color:var(--muted); font-size:14px; }
+  .incident h3 { font-size:17px; margin:0 0 2px; }
+  .tag { display:inline-block; font-size:12px; font-weight:650; padding:2px 8px; border-radius:99px; margin-right:6px; }
+  .tag.major { background:var(--badbg); color:var(--bad); } .tag.minor { background:var(--warnbg); color:var(--warn); } .tag.maintenance { background:var(--infobg); color:var(--info); } .tag.resolved { background:var(--okbg); color:var(--ok); }
+  .timeline { margin:12px 0 0; padding:0; list-style:none; }
+  .timeline li { padding:10px 0 10px 14px; border-left:2px solid var(--line); }
+  .timeline b { display:block; }
+  .timeline p { margin:2px 0; white-space:pre-line; }
+  .comp { padding:12px 0; border-top:1px solid var(--line); }
+  .comp:first-child { border-top:0; padding-top:0; }
+  .row { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .state { font-size:14px; font-weight:600; white-space:nowrap; }
+  .state.ok { color:var(--ok); } .state.warn { color:var(--warn); } .state.bad { color:var(--bad); } .state.info { color:var(--info); }
+  .bars { display:flex; gap:2px; height:30px; margin:8px 0 4px; }
+  .bars span { flex:1; border-radius:2px; background:var(--none); min-width:2px; }
+  .bars span.ok { background:var(--ok); } .bars span.warn { background:var(--warn); } .bars span.bad { background:var(--bad); }
+  .bars span:hover, .bars span:focus { opacity:.7; outline:none; }
+  .scale { display:flex; justify-content:space-between; }
+  #tip { position:fixed; pointer-events:none; background:var(--brand); color:var(--bg); font-size:13px; padding:6px 10px; border-radius:8px; max-width:260px; display:none; z-index:2; }
+  .day { padding:12px 0; border-top:1px solid var(--line); }
+  .day:first-child { border-top:0; padding-top:0; }
+  .day h4 { margin:0 0 4px; font-size:15px; }
+  details summary { cursor:pointer; color:var(--info); margin-top:8px; }
   a { color:var(--info); }
 </style>
 </head>
 <body>
 <main>
   <header><img src="logo.png" alt=""><h1>Uniformed Safe Rides status</h1></header>
-
-  <section id="state" class="card state" aria-live="polite"><span class="dot"></span><div><h2>Checking…</h2><p class="muted">Loading the latest status.</p></div></section>
-  <section id="notice" class="card notice" hidden><h3></h3><p></p><p class="muted"></p></section>
-
-  <section class="card">
-    <h3>What we check</h3>
-    <div class="rows">
-      <div class="row"><span>Ride requests and the app</span><strong id="api">…</strong></div>
-      <div class="row"><span>Website and team console</span><strong id="web">…</strong></div>
-    </div>
-    <p class="muted" id="checked"></p>
-  </section>
-
-  <p class="muted">This page runs separately from the rest of Uniformed Safe Rides so it keeps working during an outage.</p>
+  <div id="overall" class="card overall" role="status" aria-live="polite"><span class="dot"></span><span>Checking…</span></div>
+  <div id="active"></div>
+  <div id="upcoming"></div>
+  <h2>Services</h2>
+  <div class="card" id="components"><p class="muted">Loading…</p></div>
+  <h2>Past incidents</h2>
+  <div class="card" id="history"><p class="muted">Loading…</p></div>
+  <p class="muted" id="checked"></p>
+  <p class="muted">If you need a ride and the app isn't working, call your base's ride line. This page runs separately from the rest of Uniformed Safe Rides so it keeps working during an outage. Times are shown in your time zone.</p>
 </main>
+<div id="tip" role="tooltip"></div>
 <script>
 const $ = id => document.getElementById(id);
-const ago = iso => { const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hr ago` : new Date(iso).toLocaleString(); };
+const DAY = 86400000;
+const STATE_LABEL = {operational: ['Operational', 'ok'], degraded: ['Having trouble', 'warn'], outage: ['Outage', 'bad'], maintenance: ['Maintenance', 'info']};
+const STATE_WORDS = {active: '', resolved: 'Resolved', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed'};
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const when = iso => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'});
+const dayName = ms => new Date(ms).toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'});
+const ago = iso => { const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hr ago` : when(iso); };
+const startOfDay = ms => { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); };
+async function load(path, fallback) { try { const r = await fetch(`${path}?t=${Date.now()}`, {cache: 'no-store'}); return r.ok ? await r.json() : fallback; } catch { return fallback; } }
 
-async function load(path) { const r = await fetch(`${path}?t=${Date.now()}`, {cache: 'no-store'}); if (!r.ok) throw new Error(r.status); return r.json(); }
-
-async function showStatus() {
-  let s; try { s = await load('status.json'); } catch { s = null; }
-  const box = $('state'), c = s && s.checks, fresh = c && Date.now() - Date.parse(c.checkedAt) < 45 * 60000;
-  const down = fresh && (c.api === 'down' || c.website === 'down');
-  box.className = 'card state ' + (!fresh ? '' : down ? 'bad' : 'ok');
-  box.querySelector('h2').textContent = !fresh ? 'Status not confirmed' : c.api === 'down' ? 'Ride requests are having trouble' : c.website === 'down' ? 'The website is having trouble' : 'Everything is working';
-  box.querySelector('p').textContent = !fresh ? 'Our automatic check has not reported recently. If the app works for you, rides are running.' : down ? `Since ${new Date(c.downSince || c.checkedAt).toLocaleString()}. If you need a ride, call your base's ride line.` : 'Ride requests, the app and the website are all answering.';
-  $('api').textContent = c ? (c.api === 'up' ? 'Working' : 'Having trouble') : 'Unknown';
-  $('web').textContent = c ? (c.website === 'up' ? 'Working' : 'Having trouble') : 'Unknown';
-  $('checked').textContent = c ? `Last checked ${ago(c.checkedAt)}. Checks run about every 5 minutes.` : '';
-  const n = s && s.notice, nb = $('notice');
-  nb.hidden = !n;
-  if (n) { nb.querySelector('h3').textContent = n.title; nb.querySelectorAll('p')[0].textContent = n.message || ''; nb.querySelectorAll('p')[1].textContent = `Posted ${ago(n.updatedAt)}`; }
+function incidentCard(i, open) {
+  const card = el('div', 'card incident');
+  const top = el('div');
+  top.append(el('span', `tag ${i.state === 'resolved' || i.state === 'completed' ? 'resolved' : i.impact}`, i.state === 'resolved' || i.state === 'completed' ? STATE_WORDS[i.state] : i.impact === 'major' ? 'Major' : i.impact === 'minor' ? 'Minor' : 'Maintenance'));
+  if (i.affects.length) top.append(el('span', 'muted', 'Affects ' + i.affects.map(id => (window.NAMES[id] || id)).join(', ')));
+  card.append(top, el('h3', null, i.title));
+  if (i.impact === 'maintenance' && i.starts) card.append(el('p', 'muted', `${when(i.starts)}${i.ends ? ' to ' + when(i.ends) : ''}`));
+  const list = el('ul', 'timeline');
+  for (const u of (open ? i.updates : i.updates)) {
+    const li = el('li');
+    li.append(el('b', null, u.status), el('p', null, u.message), el('span', 'muted', when(u.at)));
+    list.append(li);
+  }
+  card.append(list);
+  return card;
 }
 
-showStatus();
-setInterval(showStatus, 60000);
+function dayColor(c, dayStart, history, incidents) {
+  const dayEnd = dayStart + DAY, now = Date.now();
+  const tracked = c.monitored ? Date.parse(history.startedAt || new Date().toISOString()) : Date.parse(window.FIRST_INCIDENT || new Date().toISOString());
+  const notes = [];
+  let down = 0, worst = 'ok';
+  if (c.monitored) for (const o of history.outages || []) {
+    if (o.component !== c.id) continue;
+    const s = Math.max(Date.parse(o.start), dayStart), e = Math.min(o.end ? Date.parse(o.end) : now, dayEnd);
+    if (e > s) down += e - s;
+  }
+  for (const i of incidents) {
+    if (!i.affects.includes(c.id) || i.impact === 'maintenance') continue;
+    const s = Date.parse(i.openedAt), e = i.closedAt ? Date.parse(i.closedAt) : now;
+    if (e < dayStart || s >= dayEnd) continue;
+    notes.push(i.title);
+    if (!c.monitored && i.impact === 'major') down += Math.min(e, dayEnd) - Math.max(s, dayStart);
+    if (i.impact === 'minor' && worst === 'ok') worst = 'warn';
+  }
+  const mins = Math.round(down / 60000);
+  if (mins >= 30) worst = 'bad'; else if (mins > 0 && worst === 'ok') worst = 'warn';
+  if (dayEnd <= tracked && !notes.length && !mins) return {cls: '', text: `${dayName(dayStart)}: no data yet`};
+  const text = `${dayName(dayStart)}: ${mins ? `down about ${mins} min` : 'no downtime'}${notes.length ? ' · ' + notes.join('; ') : ''}`;
+  return {cls: worst, text, up: 1 - down / DAY};
+}
+
+function render(status, incidentsFile, history) {
+  const incidents = incidentsFile.incidents || [];
+  const comps = status.components || [];
+  window.NAMES = Object.fromEntries(comps.map(c => [c.id, c.name]));
+  window.FIRST_INCIDENT = incidents.map(i => i.openedAt).sort()[0];
+  const fresh = status.checks && Date.now() - Date.parse(status.checks.checkedAt) < 45 * 60000;
+  const active = incidents.filter(i => i.state === 'active' || i.state === 'in_progress');
+  const worst = comps.reduce((w, c) => Math.max(w, {operational: 0, maintenance: 1, degraded: 2, outage: 3}[c.status] ?? 0), 0);
+
+  const o = $('overall');
+  const [text, cls] = !comps.length ? ['Status not confirmed yet', ''] : worst === 3 ? ['Some services are down. We are working on it.', 'bad'] : worst === 2 ? ['Some services are having trouble', 'warn'] : worst === 1 ? ['Maintenance in progress', 'info'] : ['All services are working', 'ok'];
+  o.className = 'card overall ' + cls; o.lastChild.textContent = text;
+
+  $('active').replaceChildren(...(active.length ? [el('h2', null, 'Current incidents'), ...active.map(i => incidentCard(i, true))] : []));
+  const upcoming = incidents.filter(i => i.state === 'scheduled').sort((a, b) => Date.parse(a.starts) - Date.parse(b.starts));
+  $('upcoming').replaceChildren(...(upcoming.length ? [el('h2', null, 'Scheduled maintenance'), ...upcoming.map(i => incidentCard(i, true))] : []));
+
+  const days = window.innerWidth < 600 ? 30 : 90, today = startOfDay(Date.now());
+  const box = $('components'); box.replaceChildren();
+  for (const c of comps) {
+    const row = el('div', 'comp');
+    const head = el('div', 'row');
+    const [label, scls] = STATE_LABEL[c.status] || STATE_LABEL.operational;
+    head.append(el('strong', null, c.name), el('span', 'state ' + scls, label));
+    const bars = el('div', 'bars'); bars.setAttribute('aria-label', `${c.name}, last ${days} days`);
+    let upSum = 0, upDays = 0;
+    for (let d = days - 1; d >= 0; d--) {
+      const info = dayColor(c, today - d * DAY, history, incidents);
+      const s = el('span', info.cls); s.tabIndex = 0; s.dataset.tip = info.text; s.setAttribute('aria-label', info.text);
+      if (info.up != null) { upSum += info.up; upDays++; }
+      bars.append(s);
+    }
+    const scale = el('div', 'scale muted');
+    scale.append(el('span', null, `${days} days ago`), el('span', null, upDays ? `${(100 * upSum / upDays).toFixed(2)}% uptime` : ''), el('span', null, 'Today'));
+    row.append(head, bars, scale);
+    if (!c.monitored) row.append(el('p', 'muted', 'Updated by our team when there is a problem.'));
+    box.append(row);
+  }
+
+  const past = incidents.filter(i => i.state === 'resolved' || i.state === 'completed');
+  const hist = $('history'); hist.replaceChildren();
+  const block = n => { const frag = document.createDocumentFragment();
+    for (let d = 0; d < n; d++) {
+      const start = today - d * DAY, list = past.filter(i => { const t = Date.parse(i.openedAt); return t >= start && t < start + DAY; });
+      const day = el('div', 'day'); day.append(el('h4', null, dayName(start)));
+      if (!list.length) day.append(el('p', 'muted', 'No incidents reported.'));
+      for (const i of list) { const det = el('details'); const sum = el('summary', null, `${i.title} (${STATE_WORDS[i.state].toLowerCase()} ${when(i.closedAt || i.openedAt)})`); det.append(sum, incidentCard(i, false)); day.append(det); }
+      frag.append(day);
+    } return frag; };
+  hist.append(block(7));
+  const older = past.filter(i => Date.parse(i.openedAt) < today - 6 * DAY);
+  if (older.length) { const more = el('details'); more.append(el('summary', null, `Older incidents (${older.length})`)); for (const i of older) more.append(incidentCard(i, false)); hist.append(more); }
+
+  $('checked').textContent = status.checks ? `Automatic checks run about every 5 minutes from outside our main hosting. Status last confirmed ${ago(status.checks.checkedAt)}.` : '';
+}
+
+const tip = $('tip');
+document.addEventListener('pointerover', e => { const t = e.target.dataset && e.target.dataset.tip; if (!t) { tip.style.display = 'none'; return; } tip.textContent = t; tip.style.display = 'block'; const r = e.target.getBoundingClientRect(); tip.style.left = Math.min(window.innerWidth - 270, Math.max(8, r.left - 120)) + 'px'; tip.style.top = (r.top - 44) + 'px'; });
+document.addEventListener('focusin', e => { const t = e.target.dataset && e.target.dataset.tip; if (t) { tip.textContent = t; tip.style.display = 'block'; const r = e.target.getBoundingClientRect(); tip.style.left = Math.min(window.innerWidth - 270, Math.max(8, r.left - 120)) + 'px'; tip.style.top = (r.top - 44) + 'px'; } });
+
+async function refresh() { const [s, i, h] = await Promise.all([load('status.json', {}), load('incidents.json', {incidents: []}), load('history.json', {outages: []})]); render(s, i, h); }
+refresh(); setInterval(refresh, 60000);
 </script>
 </body>
 </html>

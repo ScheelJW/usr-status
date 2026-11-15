@@ -1,6 +1,6 @@
 name: Check USR
 
-# Runs off Cloudflare on purpose. Updates the public status page when USR's state or the notice
+# Runs off Cloudflare on purpose. Updates the public status page when USR's state or an incident
 # changes. Alerts to Jared come from the main repository's uptime workflow, so this one never fails
 # just because USR is down.
 on:
@@ -8,7 +8,7 @@ on:
     - cron: '*/5 * * * *'
   push:
     branches: [main]
-    paths: [NOTICE.md]
+    paths: ['incidents/**']
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,6 @@ jobs:
         run: |
           git config user.name 'usr-status'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add status.json
+          git add status.json incidents.json history.json incidents
           git commit -m 'Update service status' || exit 0
           git pull --rebase --autostash && git push
