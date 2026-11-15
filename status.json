@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-15T15:57:49.774Z",
+  "notice": null,
+  "checks": {
+    "checkedAt": "2026-11-15T15:57:49.774Z",
+    "api": "up",
+    "website": "up",
+    "downSince": null
+  }
+}
