@@ -29,6 +29,9 @@ jobs:
     timeout-minutes: 30
     env:
       HAS_KEY: ${{ secrets.CLAUDE_API_KEY != '' }}
+      # The action sets up Node 18, so npm would otherwise pick an old Claude Code that
+      # can't use current models. Current releases ship a native binary, so resolve as Node 22.
+      NPM_CONFIG_NODE_VERSION: 22.0.0
     steps:
       - name: Skip when no API key is set
         if: env.HAS_KEY != 'true'
