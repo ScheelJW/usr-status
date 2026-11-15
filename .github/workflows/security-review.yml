@@ -29,9 +29,10 @@ jobs:
     timeout-minutes: 30
     env:
       HAS_KEY: ${{ secrets.CLAUDE_API_KEY != '' }}
-      # The action sets up Node 18, so npm would otherwise pick an old Claude Code that
-      # can't use current models. Current releases ship a native binary, so resolve as Node 22.
-      NPM_CONFIG_NODE_VERSION: 22.0.0
+      # The action sets up Node 18, where npm resolves an old Claude Code that can't use
+      # current models. Its own global install goes to this unused folder instead, and the
+      # step below puts a current Claude Code on PATH.
+      NPM_CONFIG_PREFIX: /home/runner/.npm-unused
     steps:
       - name: Skip when no API key is set
         if: env.HAS_KEY != 'true'
@@ -42,6 +43,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          node-version: 22
+
+      - name: Install current Claude Code
+        if: env.HAS_KEY == 'true'
+        run: |
+          npm install -g --prefix "$HOME/.claude-cli" @anthropic-ai/claude-code@latest
+          echo "$HOME/.claude-cli/bin" >> "$GITHUB_PATH"
+          "$HOME/.claude-cli/bin/claude" --version
 
       - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main, 2026-11-15
         if: env.HAS_KEY == 'true'
