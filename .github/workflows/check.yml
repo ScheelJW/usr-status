@@ -1,7 +1,7 @@
 name: Check USR
 
 # Runs off Cloudflare on purpose. Updates the public status page when USR's state or an incident
-# changes. Alerts to Jared come from the main repository's uptime workflow, so this one never fails
+# changes. Alerts to Jared come from alert.yml, so this one never fails
 # just because USR is down.
 on:
   schedule:
