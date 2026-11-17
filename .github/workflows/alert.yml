@@ -1,12 +1,14 @@
 name: Production uptime
 
 # Fails (and GitHub emails the repository owner) when the live backend stops answering.
+# Every 5 minutes: this repository is public, so the minutes are free. GitHub can start a
+# scheduled run several minutes late; the API itself alerts faster (ops-alerts.ts, error spikes).
 # Read-only: three GET requests, no sign-in, no data created.
 # Moved here from the private app repository on 2026-11-17: this repository is public, so
 # its Actions minutes are free, while the app repository's minutes are capped.
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions: {}
