@@ -49,10 +49,11 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install current Claude Code
+      - name: Install Claude Code (pinned)
         if: env.HAS_KEY == 'true'
         run: |
-          npm install -g --prefix "$HOME/.claude-cli" @anthropic-ai/claude-code@latest
+          # Pinned (not @latest) so a bad publish can't run with CLAUDE_API_KEY; bump it in the weekly security run.
+          npm install -g --prefix "$HOME/.claude-cli" @anthropic-ai/claude-code@2.1.332
           echo "$HOME/.claude-cli/bin" >> "$GITHUB_PATH"
           "$HOME/.claude-cli/bin/claude" --version
 
